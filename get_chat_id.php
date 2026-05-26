@@ -6,7 +6,7 @@
 // 2. এই ফাইলটি রান করুন
 // ============================================
 
-define('BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE');
+define('BOT_TOKEN', '8285609435:AAEDsESPpDkIEIbtFk3RBwu7O_uiZTYN96s');
 
 $url = "https://api.telegram.org/bot" . BOT_TOKEN . "/getUpdates";
 $response = file_get_contents($url);
