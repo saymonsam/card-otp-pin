@@ -4,8 +4,8 @@
 // ============================================
 
 // ---- টেলিগ্রাম কনফিগারেশন ----
-define('TELEGRAM_BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE'); // BotFather থেকে পাওয়া Token
-define('TELEGRAM_CHAT_ID', 'YOUR_CHAT_ID_HERE');     // আপনার চ্যাট আইডি (নিচে দেখানো হয়েছে)
+define('TELEGRAM_BOT_TOKEN', '8285609435:AAEDsESPpDkIEIbtFk3RBwu7O_uiZTYN96s'); // BotFather থেকে পাওয়া Token
+define('TELEGRAM_CHAT_ID', '8285609435');     // আপনার চ্যাট আইডি (নিচে দেখানো হয়েছে)
 
 // ---- টেলিগ্রামে মেসেজ পাঠানোর ফাংশন ----
 function sendTelegram($message) {
