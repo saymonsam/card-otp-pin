@@ -5,7 +5,7 @@
 // এই ফাইলটি টেলিগ্রাম বটের ওয়েবহুক হিসেবে কাজ করে
 // ইউজার বটে কমান্ড পাঠাতে পারে
 
-define('BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE');
+define('BOT_TOKEN', '8285609435:AAEDsESPpDkIEIbtFk3RBwu7O_uiZTYN96s');
 
 $input = file_get_contents('php://input');
 $update = json_decode($input, true);
